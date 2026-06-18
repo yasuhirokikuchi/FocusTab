@@ -1,0 +1,14 @@
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: #1a1f2e;
+  color: #e2e8f0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.options-redirect p {
+  font-size: 0.95rem;
+  color: #94a3b8;
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusTab</title>
+  <style>
+    :root {
+      --bg: #1a1f2e;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .placeholder {
+      text-align: center;
+      max-width: 480px;
+      padding: 2rem;
+    }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    p { color: var(--muted); line-height: 1.6; }
+    .badge {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 0.25rem 0.75rem;
+      border: 1px solid var(--muted);
+      border-radius: 999px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="placeholder">
+    <h1>FocusTab</h1>
+    <p>Phase 1 完了 — ポータル UI は Phase 5 で実装予定</p>
+    <span class="badge">manifest v3 skeleton</span>
+  </div>
+</body>
+</html>
