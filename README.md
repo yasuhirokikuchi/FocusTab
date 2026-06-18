@@ -63,10 +63,13 @@ npm run build
 ### 開発中（HMR 付き）
 
 ```bash
-npm run dev
+npm install   # 初回または node_modules がない場合
+npm run dev   # 開発サーバー起動（localhost:3000）が必須
 ```
 
-同様に `.output/chrome-mv3` を読み込みます。コード変更は自動で反映されます。
+1. 上記コマンドで開発サーバーを起動したままにする
+2. Chrome で `.output/chrome-mv3-dev` を読み込む（本番ビルドの `chrome-mv3` ではない）
+3. コード変更は自動で反映されます
 
 ### 配布用 ZIP
 
