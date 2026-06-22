@@ -1,4 +1,4 @@
-# FocusTab
+# <img src="assets/icon.png" alt="FocusTab" width="40" height="40" align="top" /> FocusTab
 
 **v1.1.0** — 閲覧制限付きコンテキスト切り替えタブ（Chrome 拡張機能）
 
