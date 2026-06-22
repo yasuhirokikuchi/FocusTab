@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'wxt';
 
 export default defineConfig({
-  modules: ['@wxt-dev/module-react'],
+  modules: ['@wxt-dev/module-react', '@wxt-dev/auto-icons'],
   srcDir: '.',
   outDir: '.output',
   alias: {
