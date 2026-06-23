@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { sendCommand } from '@/shared/messaging';
-import type { AppState, ModeSwitchResponse } from '@/shared/messages';
+import type { AppState, ModeSwitchResponse, TaskDeleteArchivedResponse } from '@/shared/messages';
 import type { Mode, SettingsSummary } from '@/shared/schemas';
 import { BookmarkList } from './components/BookmarkList';
 import { LockPanel } from './components/LockPanel';
@@ -112,6 +112,29 @@ export default function App() {
     const res = await sendCommand({ type: 'TASK_UNARCHIVE', taskId });
     if (!res.ok) {
       setError(res.error?.message ?? 'タスクの復元に失敗しました');
+      return;
+    }
+    await refresh();
+  };
+
+  const handleTaskDeleteAllArchived = async () => {
+    if (!state || state.archivedTasks.length === 0) return;
+
+    const count = state.archivedTasks.length;
+    if (
+      !window.confirm(
+        `アーカイブ済みタスク ${count} 件をすべて削除します。\nこの操作は元に戻せません。続行しますか？`,
+      )
+    ) {
+      return;
+    }
+
+    const res = await sendCommand<TaskDeleteArchivedResponse>({
+      type: 'TASK_DELETE_ARCHIVED',
+      modeId: state.activeModeId,
+    });
+    if (!res.ok) {
+      setError(res.error?.message ?? 'アーカイブタスクの一括削除に失敗しました');
       return;
     }
     await refresh();
@@ -324,6 +347,7 @@ export default function App() {
               onReorder={handleTaskReorder}
               onArchive={handleTaskArchive}
               onUnarchive={handleTaskUnarchive}
+              onDeleteAllArchived={handleTaskDeleteAllArchived}
             />
             <aside className="portal-sidebar">
               <BookmarkList

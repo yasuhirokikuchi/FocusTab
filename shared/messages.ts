@@ -150,6 +150,15 @@ export interface TaskUnarchiveMessage {
   taskId: string;
 }
 
+export interface TaskDeleteArchivedMessage {
+  type: 'TASK_DELETE_ARCHIVED';
+  modeId: string;
+}
+
+export interface TaskDeleteArchivedResponse {
+  deletedCount: number;
+}
+
 export interface BookmarkCreateMessage {
   type: 'BOOKMARK_CREATE';
   modeId: string;
@@ -234,6 +243,7 @@ export type IncomingMessage =
   | TaskReorderMessage
   | TaskArchiveMessage
   | TaskUnarchiveMessage
+  | TaskDeleteArchivedMessage
   | BookmarkCreateMessage
   | BookmarkUpdateMessage
   | BookmarkDeleteMessage

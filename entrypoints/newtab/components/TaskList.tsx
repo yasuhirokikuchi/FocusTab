@@ -12,6 +12,7 @@ interface Props {
   onReorder: (taskIds: string[]) => Promise<void>;
   onArchive: (taskId: string) => Promise<void>;
   onUnarchive: (taskId: string) => Promise<void>;
+  onDeleteAllArchived: () => Promise<void>;
 }
 
 export function TaskList({
@@ -24,6 +25,7 @@ export function TaskList({
   onReorder,
   onArchive,
   onUnarchive,
+  onDeleteAllArchived,
 }: Props) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -197,6 +199,18 @@ export function TaskList({
             <span aria-hidden="true">{showArchived ? ' ▲' : ' ▼'}</span>
           </button>
           {showArchived && (
+            <>
+            <div className="archived-toolbar">
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm archived-delete-all"
+                disabled={disabled || busy}
+                aria-label={`アーカイブ済みタスク ${archivedTasks.length} 件をすべて削除`}
+                onClick={() => void onDeleteAllArchived()}
+              >
+                すべて削除
+              </button>
+            </div>
             <ul className="task-list archived" aria-label="アーカイブ済みタスク">
               {archivedTasks.map((task) => (
                 <li key={task.id} className="task-item archived-item">
@@ -224,6 +238,7 @@ export function TaskList({
                 </li>
               ))}
             </ul>
+            </>
           )}
         </div>
       )}

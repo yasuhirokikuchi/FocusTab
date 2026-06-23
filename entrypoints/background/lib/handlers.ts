@@ -169,6 +169,32 @@ export async function handleTaskUnarchive(taskId: string): Promise<void> {
   });
 }
 
+export async function handleTaskDeleteArchived(
+  modeId: string,
+): Promise<{ deletedCount: number }> {
+  let deletedCount = 0;
+
+  await updateStorage((current) => {
+    if (!current.modes.some((m) => m.id === modeId)) {
+      throw new FocusTabError('INVALID_MODE', 'モードが見つかりません');
+    }
+
+    const remaining = current.tasks.filter((t) => {
+      if (t.modeId !== modeId || !t.archivedAt) return true;
+      deletedCount += 1;
+      return false;
+    });
+
+    if (deletedCount === 0) {
+      return current;
+    }
+
+    return { ...current, tasks: remaining };
+  });
+
+  return { deletedCount };
+}
+
 export async function handleBookmarkCreate(
   modeId: string,
   url: string,

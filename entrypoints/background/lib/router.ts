@@ -19,6 +19,7 @@ import {
   handleTaskReorder,
   handleTaskArchive,
   handleTaskUnarchive,
+  handleTaskDeleteArchived,
   handleTaskToggle,
   handleTaskUpdate,
   lockMode,
@@ -101,6 +102,9 @@ export async function dispatchMessage(
       case 'TASK_UNARCHIVE':
         await handleTaskUnarchive(message.taskId);
         return undefined;
+
+      case 'TASK_DELETE_ARCHIVED':
+        return handleTaskDeleteArchived(message.modeId);
 
       case 'BOOKMARK_CREATE':
         return handleBookmarkCreate(message.modeId, message.url, message.title);
