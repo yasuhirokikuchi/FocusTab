@@ -76,6 +76,22 @@ export default function App() {
     await refresh();
   };
 
+  const handleTaskUpdate = async (taskId: string, text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    const res = await sendCommand({
+      type: 'TASK_UPDATE',
+      taskId,
+      patch: { text: trimmed },
+    });
+    if (!res.ok) {
+      setError(res.error?.message ?? 'タスクの編集に失敗しました');
+      return;
+    }
+    await refresh();
+  };
+
   const handleTaskDelete = async (taskId: string) => {
     const res = await sendCommand({ type: 'TASK_DELETE', taskId });
     if (!res.ok) {
@@ -150,6 +166,19 @@ export default function App() {
     });
     if (!res.ok) {
       setError(res.error?.message ?? 'ブックマークの追加に失敗しました');
+      return;
+    }
+    await refresh();
+  };
+
+  const handleBookmarkUpdate = async (bookmarkId: string, url: string, title: string) => {
+    const res = await sendCommand({
+      type: 'BOOKMARK_UPDATE',
+      bookmarkId,
+      patch: { url, title },
+    });
+    if (!res.ok) {
+      setError(res.error?.message ?? 'ブックマークの編集に失敗しました');
       return;
     }
     await refresh();
@@ -343,6 +372,7 @@ export default function App() {
               disabled={switching}
               onAdd={handleTaskAdd}
               onToggle={handleTaskToggle}
+              onUpdate={handleTaskUpdate}
               onDelete={handleTaskDelete}
               onReorder={handleTaskReorder}
               onArchive={handleTaskArchive}
@@ -354,6 +384,7 @@ export default function App() {
                 bookmarks={state.bookmarks}
                 disabled={switching}
                 onAdd={handleBookmarkAdd}
+                onUpdate={handleBookmarkUpdate}
                 onDelete={handleBookmarkDelete}
                 onReorder={handleBookmarkReorder}
               />

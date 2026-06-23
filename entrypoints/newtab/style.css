@@ -313,9 +313,35 @@
   flex-shrink: 0;
 }
 
-.task-list.completed .task-label span {
+.task-list.completed .task-label span,
+.task-text-completed {
   text-decoration: line-through;
   color: var(--ft-muted);
+}
+
+.inline-edit-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--ft-accent);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--ft-text);
+  font-size: 0.875rem;
+}
+
+.inline-edit-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+}
+
+.task-item.editing {
+  align-items: flex-start;
+}
+
+.archived-edit-input {
+  flex: 1;
+  min-width: 0;
 }
 
 .bookmark-form {
@@ -357,6 +383,23 @@
 
 .bookmark-item.dragging {
   opacity: 0.5;
+}
+
+.bookmark-item.editing {
+  align-items: stretch;
+  padding: 0.5rem 0;
+}
+
+.bookmark-inline-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.bookmark-inline-edit-actions {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .bookmark-item[draggable='true'] {
