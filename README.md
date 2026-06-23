@@ -20,6 +20,7 @@
 - **タスクアーカイブ** — 完了タスクをアーカイブ／復元。折りたたみ式のアーカイブ一覧を追加
 - **DNR ルール計測** — unsafe ルール数の確認用 `GET_DNR_STATS` と、ルール適用時のログ出力
 - **ポップアップ・オプション** — ツールバーから現在モードの確認、ポータル・設定へのクイックアクセス
+<img width="400" height="226" alt="Image" src="https://github.com/user-attachments/assets/a0b0fb27-bb81-4d92-8209-85b200b600c1" />
 
 ### v1.0.0
 
