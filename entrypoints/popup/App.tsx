@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import { sendCommand } from '@/shared/messaging';
-import type { AppState } from '@/shared/messages';
+import type { AppState, ModeSwitchResponse } from '@/shared/messages';
+import { ModeSwitcher } from '../newtab/components/ModeSwitcher';
+import { formatRemainingTime, useLockCountdown } from '../newtab/hooks/useLockCountdown';
 import './style.css';
 
 const PORTAL_URL = chrome.runtime.getURL('newtab.html');
@@ -14,18 +16,66 @@ function openTab(url: string) {
 export default function App() {
   const [state, setState] = useState<AppState | null>(null);
   const [loading, setLoading] = useState(true);
+  const [switching, setSwitching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    void sendCommand<AppState>({ type: 'GET_STATE' }).then((res) => {
-      if (res.ok && res.data) setState(res.data);
-      setLoading(false);
-    });
+  const refresh = useCallback(async () => {
+    const res = await sendCommand<AppState>({ type: 'GET_STATE' });
+    if (res.ok && res.data) {
+      setState(res.data);
+      return true;
+    }
+    return false;
   }, []);
 
-  const locked = Boolean(state?.lockState);
+  useEffect(() => {
+    void refresh().finally(() => setLoading(false));
+  }, [refresh]);
+
+  const remainingMs = useLockCountdown(state?.lockState ?? null);
+  const locked = Boolean(state?.lockState && remainingMs > 0);
+
+  const handleSwitch = async (targetModeId: string) => {
+    if (!state || locked || switching) return;
+
+    const needsConfirm = state.settings.confirmModeSwitch;
+    if (needsConfirm) {
+      const mode = state.modes.find((m) => m.id === targetModeId);
+      if (
+        !window.confirm(
+          `「${mode?.name ?? targetModeId}」モードに切り替えます。\n` +
+            '現在のタブは退避され、保存済みタブが復元されます。続行しますか？',
+        )
+      ) {
+        return;
+      }
+    }
+
+    setSwitching(true);
+    setError(null);
+    const res = await sendCommand<ModeSwitchResponse>({
+      type: 'MODE_SWITCH',
+      targetModeId,
+      confirmed: true,
+    });
+    setSwitching(false);
+
+    if (!res.ok) {
+      setError(res.error?.message ?? 'モード切替に失敗しました');
+      return;
+    }
+    await refresh();
+  };
+
+  const theme = state?.activeMode.theme;
+  const popupStyle = theme
+    ? ({
+        '--ft-accent': theme.accent,
+      } as CSSProperties)
+    : undefined;
 
   return (
-    <div className="popup">
+    <div className="popup" style={popupStyle}>
       <header className="popup-header">
         <h1>FocusTab</h1>
       </header>
@@ -40,7 +90,29 @@ export default function App() {
           {state.activeMode.isRestrictive && (
             <p className="popup-badge">閲覧制限あり</p>
           )}
-          {locked && <p className="popup-lock">🔒 モードロック中</p>}
+          {locked && state.lockState && (
+            <p className="popup-lock" role="status" aria-live="polite">
+              🔒 ロック中 — 残り {formatRemainingTime(remainingMs)}
+            </p>
+          )}
+          {switching && (
+            <p className="popup-muted" role="status" aria-live="polite">
+              モード切替中…
+            </p>
+          )}
+          {error && (
+            <p className="popup-error" role="alert">
+              {error}
+            </p>
+          )}
+
+          <ModeSwitcher
+            modes={state.modes}
+            activeModeId={state.activeModeId}
+            locked={locked}
+            switching={switching}
+            onSwitch={(modeId) => void handleSwitch(modeId)}
+          />
         </div>
       ) : (
         <p className="popup-muted">状態を取得できませんでした</p>
