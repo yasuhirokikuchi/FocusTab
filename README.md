@@ -7,9 +7,11 @@
 
 ### v1.2.0
 
-<img width="400" height="226" alt="Image" src="https://github.com/user-attachments/assets/a0b0fb27-bb81-4d92-8209-85b200b600c1" />
+
 
 - **ポップアップからのモード切替** — ツールバーポップアップからモードを切り替え（確認ダイアログ・ロック無効化対応）
+  
+  <img width="400" height="226" alt="Image" src="https://github.com/user-attachments/assets/a0b0fb27-bb81-4d92-8209-85b200b600c1" />
 - **アーカイブタスクの一括削除** — アーカイブ一覧から現在モードのタスクをまとめて削除
 
 ### v1.1.0
