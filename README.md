@@ -93,6 +93,7 @@ npm run zip
 ### 初回起動
 
 新しいタブを開くと FocusTab ポータルが表示されます。初回は 3 ステップのオンボーディングが表示され、機能概要とプライバシー方針を説明します。
+<img width="380" height="224" alt="Image" src="https://github.com/user-attachments/assets/ac86c65a-032a-4101-8918-81ca06af5603" />
 
 ### モード切替
 
