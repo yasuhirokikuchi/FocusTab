@@ -1,14 +1,14 @@
-import { migrateStorage, storageToRecord } from '@/shared/migration';
-import { isIncomingMessage, type MessageResponse } from '@/shared/messages';
-import { initWebNavigationHandlers } from './lib/blocking';
-import { dispatchMessage, isFocusTabError, toMessageError } from './lib/router';
-import { initLockAlarmListener, restoreLockFromAlarms } from './lib/lock';
-import { getActiveMode, syncBlockingWithActiveMode } from './lib/mode';
-import { resumeRestoreIfNeeded } from './lib/tabs';
-import { saveStorage } from './lib/state';
+import { migrateStorage, storageToRecord } from "@/shared/migration";
+import { isIncomingMessage, type MessageResponse } from "@/shared/messages";
+import { initWebNavigationHandlers } from "./lib/blocking";
+import { dispatchMessage, isFocusTabError, toMessageError } from "./lib/router";
+import { initLockAlarmListener, restoreLockFromAlarms } from "./lib/lock";
+import { getActiveMode, syncBlockingWithActiveMode } from "./lib/mode";
+import { resumeRestoreIfNeeded } from "./lib/tabs";
+import { saveStorage } from "./lib/state";
 
 export default defineBackground(() => {
-  console.log('[FocusTab] Service worker loaded (Phase 4)');
+  console.log("[FocusTab] Service worker loaded");
 
   async function initializeStorage(): Promise<void> {
     const raw = await chrome.storage.local.get(null);
@@ -34,9 +34,9 @@ export default defineBackground(() => {
   });
 
   chrome.runtime.onInstalled.addListener(async (details) => {
-    if (details.reason === 'install' || details.reason === 'update') {
+    if (details.reason === "install" || details.reason === "update") {
       await bootstrap();
-      console.log('[FocusTab] Bootstrap complete');
+      console.log("[FocusTab] Bootstrap complete");
     }
   });
 
@@ -47,19 +47,26 @@ export default defineBackground(() => {
   void bootstrap();
 
   chrome.runtime.onMessage.addListener(
-    (raw: unknown, sender, sendResponse: (response: MessageResponse) => void) => {
+    (
+      raw: unknown,
+      sender,
+      sendResponse: (response: MessageResponse) => void,
+    ) => {
       if (!isIncomingMessage(raw)) {
         sendResponse({
           ok: false,
-          error: { code: 'INTERNAL', message: '不明なメッセージです' },
+          error: { code: "INTERNAL", message: "不明なメッセージです" },
         });
         return true;
       }
 
-      if (!sender.url?.startsWith('chrome-extension://')) {
+      if (!sender.url?.startsWith("chrome-extension://")) {
         sendResponse({
           ok: false,
-          error: { code: 'PERMISSION_DENIED', message: '許可されていない送信元です' },
+          error: {
+            code: "PERMISSION_DENIED",
+            message: "許可されていない送信元です",
+          },
         });
         return true;
       }

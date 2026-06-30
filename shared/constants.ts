@@ -1,4 +1,4 @@
-/** FocusTab 共有定数 — Phase 3 */
+/** FocusTab 共有定数 */
 
 export const CURRENT_SCHEMA_VERSION = 1;
 

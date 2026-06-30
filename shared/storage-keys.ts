@@ -1,4 +1,4 @@
-/** chrome.storage キー定数 — Phase 3 */
+/** chrome.storage キー定数 */
 
 export const STORAGE_KEYS = {
   SCHEMA_VERSION: 'schemaVersion',
