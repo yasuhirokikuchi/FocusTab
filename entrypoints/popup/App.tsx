@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import { sendCommand } from '@/shared/messaging';
 import type { AppState, ModeSwitchResponse } from '@/shared/messages';
-import { themeCssVariables } from '@/shared/theme';
 import { ModeSwitcher } from '../newtab/components/ModeSwitcher';
 import { formatRemainingTime, useLockCountdown } from '../newtab/hooks/useLockCountdown';
 import './style.css';
@@ -68,7 +67,12 @@ export default function App() {
     await refresh();
   };
 
-  const popupStyle = themeCssVariables as CSSProperties;
+  const theme = state?.activeMode.theme;
+  const popupStyle = theme
+    ? ({
+        '--ft-accent': theme.accent,
+      } as CSSProperties)
+    : undefined;
 
   return (
     <div className="popup" style={popupStyle}>

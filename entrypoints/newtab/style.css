@@ -1,11 +1,27 @@
-@import '../../shared/theme.css';
-
 .portal {
+  --ft-bg: #1a1f2e;
+  --ft-text: #e2e8f0;
+  --ft-muted: #94a3b8;
+  --ft-accent: #3b82f6;
+  --ft-surface: rgba(255, 255, 255, 0.04);
+  --ft-border: rgba(148, 163, 184, 0.25);
   min-height: 100vh;
   background: var(--ft-bg);
   color: var(--ft-text);
   font-family: system-ui, -apple-system, sans-serif;
   padding: 2rem clamp(1rem, 4vw, 3rem);
+}
+
+.portal[data-mode='work'] {
+  --ft-accent: #3b82f6;
+}
+
+.portal[data-mode='study'] {
+  --ft-accent: #10b981;
+}
+
+.portal[data-mode='hobby'] {
+  --ft-accent: #f59e0b;
 }
 
 .portal-header {

@@ -6,17 +6,14 @@ import type {
   Task,
 } from '../schemas';
 import { CURRENT_SCHEMA_VERSION } from '../constants';
-import { DEFAULT_MODE_THEME } from '../theme';
 
 const ISO = '2026-06-18T00:00:00.000Z';
-
-const defaultTheme = DEFAULT_MODE_THEME;
 
 export const defaultModes: Mode[] = [
   {
     id: 'work',
     name: '仕事',
-    theme: defaultTheme,
+    theme: { accent: '#3b82f6', bg: '#1a1f2e', text: '#e2e8f0' },
     isRestrictive: true,
     blacklist: [
       'youtube.com',
@@ -34,7 +31,7 @@ export const defaultModes: Mode[] = [
   {
     id: 'study',
     name: '学習',
-    theme: defaultTheme,
+    theme: { accent: '#10b981', bg: '#0f172a', text: '#e2e8f0' },
     isRestrictive: true,
     blacklist: [
       'youtube.com',
@@ -51,7 +48,7 @@ export const defaultModes: Mode[] = [
   {
     id: 'hobby',
     name: '趣味',
-    theme: defaultTheme,
+    theme: { accent: '#f59e0b', bg: '#1c1917', text: '#fafaf9' },
     isRestrictive: false,
     blacklist: [],
     sortOrder: 2,
