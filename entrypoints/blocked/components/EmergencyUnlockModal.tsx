@@ -43,7 +43,10 @@ export function EmergencyUnlockModal({ onClose, onSuccess }: Props) {
       }}
     >
       <div className="modal-card">
-        <h2 id="emergency-title">緊急解除</h2>
+        <h2 id="emergency-title">モードロックの緊急解除</h2>
+        <p className="modal-desc">
+          モードロックのみ解除します。このサイトへのアクセス制限は解除されません。解除後はタスク一覧から別のモードに切り替えてください。
+        </p>
         <p className="modal-desc">
           以下の文を正確に入力してください。コピー＆ペーストはできません。
         </p>
@@ -83,9 +86,9 @@ export function EmergencyUnlockModal({ onClose, onSuccess }: Props) {
               type="submit"
               className="btn btn-danger"
               disabled={busy || !input.trim()}
-              aria-label="緊急解除を実行"
+              aria-label="モードロックを解除する"
             >
-              解除する
+              ロックを解除する
             </button>
           </div>
         </form>
