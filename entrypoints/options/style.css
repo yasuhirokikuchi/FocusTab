@@ -1,8 +1,10 @@
+@import '../../shared/theme.css';
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  background: #1a1f2e;
-  color: #e2e8f0;
+  background: var(--ft-bg);
+  color: var(--ft-text);
   min-height: 100vh;
   display: grid;
   place-items: center;
@@ -10,5 +12,5 @@ body {
 
 .options-redirect p {
   font-size: 0.95rem;
-  color: #94a3b8;
+  color: var(--ft-muted);
 }

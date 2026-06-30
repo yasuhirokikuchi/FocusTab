@@ -1,10 +1,7 @@
+@import '../../shared/theme.css';
+
 :root {
-  color-scheme: dark;
-  --ft-bg: #1a1f2e;
-  --ft-text: #e2e8f0;
-  --ft-muted: #94a3b8;
-  --ft-accent: #3b82f6;
-  --ft-border: #334155;
+  color-scheme: light;
 }
 
 * {
