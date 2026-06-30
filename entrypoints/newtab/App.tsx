@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { sendCommand } from '@/shared/messaging';
 import type { AppState, ModeSwitchResponse, TaskDeleteArchivedResponse } from '@/shared/messages';
 import type { Mode, SettingsSummary } from '@/shared/schemas';
+import { themeCssVariables } from '@/shared/theme';
 import { BookmarkList } from './components/BookmarkList';
 import { LockPanel } from './components/LockPanel';
 import { ModeManager } from './components/ModeManager';
@@ -283,15 +284,8 @@ export default function App() {
   const modeId = state?.activeModeId ?? 'work';
   const locked = Boolean(state?.lockState);
   const progress = state?.restoreProgress;
-  const theme = state?.activeMode.theme;
 
-  const portalStyle = theme
-    ? ({
-        '--ft-accent': theme.accent,
-        '--ft-bg': theme.bg ?? '#1a1f2e',
-        '--ft-text': theme.text ?? '#e2e8f0',
-      } as CSSProperties)
-    : undefined;
+  const portalStyle = themeCssVariables as CSSProperties;
 
   return (
     <div className="portal" data-mode={modeId} style={portalStyle}>
