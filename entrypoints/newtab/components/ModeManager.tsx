@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react';
 import type { Mode } from '@/shared/schemas';
 import { MAX_MODES, MAX_MODE_NAME_LENGTH } from '@/shared/constants';
+import { DEFAULT_MODE_THEME, THEME_ACCENT_PRESETS, THEME_COLORS } from '@/shared/theme';
 
-const PRESET_ACCENTS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+const PRESET_ACCENTS = [...THEME_ACCENT_PRESETS];
 
 interface Props {
   modeConfigs: Mode[];
@@ -53,7 +54,7 @@ function emptyForm(sortOrder: number): ModeFormState {
   return {
     id: '',
     name: '',
-    accent: PRESET_ACCENTS[sortOrder % PRESET_ACCENTS.length],
+    accent: THEME_COLORS.accent,
     isRestrictive: true,
     blacklistText: '',
   };
@@ -107,7 +108,11 @@ export function ModeManager({
 
     const name = form.name.trim();
     const blacklist = parseBlacklist(form.blacklistText);
-    const theme = { accent: form.accent, bg: '#1a1f2e', text: '#e2e8f0' };
+    const theme = {
+      accent: form.accent,
+      bg: DEFAULT_MODE_THEME.bg,
+      text: DEFAULT_MODE_THEME.text,
+    };
 
     setBusy(true);
     setError(null);
