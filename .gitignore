@@ -7,7 +7,7 @@ node_modules/
 
 # Documentation
 docs/
-slides/
+slide/
 
 # Environment
 .env
