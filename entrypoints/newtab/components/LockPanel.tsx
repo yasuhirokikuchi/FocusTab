@@ -36,7 +36,7 @@ export function LockPanel({ lockState, disabled, onLock }: Props) {
             残り <strong>{formatRemainingTime(remainingMs)}</strong>
           </p>
           <p className="muted lock-hint">
-            緊急解除は制限ページ右下から可能です
+            モードロックの緊急解除は、制限サイトを開いたときのブロック画面右下から可能です（サイトの制限は解除されません）
           </p>
         </div>
       ) : (
