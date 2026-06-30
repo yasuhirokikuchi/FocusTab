@@ -18,10 +18,16 @@ function PortalLink({ children }: { children: React.ReactNode }) {
   );
 }
 
+function isLockActive(lockState: AppState['lockState']): boolean {
+  if (!lockState) return false;
+  return new Date(lockState.expiresAt).getTime() > Date.now();
+}
+
 export default function App() {
   const reason = useQueryParam('reason') ?? 'blacklist';
   const site = useQueryParam('site');
   const [modeName, setModeName] = useState('…');
+  const [locked, setLocked] = useState(false);
   const [showEmergency, setShowEmergency] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
 
@@ -29,6 +35,7 @@ export default function App() {
     void sendCommand<AppState>({ type: 'GET_STATE' }).then((res) => {
       if (res.ok && res.data) {
         setModeName(res.data.activeMode.name);
+        setLocked(isLockActive(res.data.lockState));
       }
     });
   }, []);
@@ -44,7 +51,10 @@ export default function App() {
         <h1>現在は{modeName}モードです</h1>
         {unlocked ? (
           <>
-            <p className="success">ロックを解除しました</p>
+            <p className="success">モードロックを解除しました</p>
+            <p className="muted">
+              このサイトへのアクセス制限は続いています。別のモードに切り替えるにはタスク一覧へ戻ってください。
+            </p>
             <PortalLink>タスク一覧へ</PortalLink>
           </>
         ) : (
@@ -54,19 +64,26 @@ export default function App() {
                 ? `${site} へのアクセスは制限されています`
                 : 'タスクに戻りましょう'}
             </p>
+            {locked ? (
+              <p className="muted">
+                モードロック中のため切替できません。右下からロックのみ緊急解除できます（このサイトの制限は解除されません）。
+              </p>
+            ) : (
+              <p className="muted">別のモードに切り替えるには、タスク一覧へ戻ってください。</p>
+            )}
             <PortalLink>タスク一覧へ</PortalLink>
           </>
         )}
       </div>
 
-      {!unlocked && (
+      {!unlocked && locked && (
         <button
           type="button"
           className="emergency"
-          aria-label="緊急解除"
+          aria-label="モードロックの緊急解除"
           onClick={() => setShowEmergency(true)}
         >
-          緊急解除
+          モードロック解除
         </button>
       )}
 
