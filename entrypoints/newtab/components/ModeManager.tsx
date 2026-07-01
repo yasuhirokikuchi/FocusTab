@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
-import type { Mode } from '@/shared/schemas';
+import type { Mode, TabSnapshot } from '@/shared/schemas';
 import { MAX_MODES, MAX_MODE_NAME_LENGTH } from '@/shared/constants';
+import { TabSnapshotSection } from './TabSnapshotSection';
 
 const PRESET_ACCENTS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
 
@@ -27,6 +28,9 @@ interface Props {
   ) => Promise<void>;
   onDelete: (modeId: string) => Promise<void>;
   onRestoreDefaults: () => Promise<void>;
+  onTabSnapshotList: (modeId: string) => Promise<TabSnapshot[] | null>;
+  onTabSnapshotRemove: (modeId: string, index: number) => Promise<boolean>;
+  onTabSnapshotClear: (modeId: string) => Promise<boolean>;
   onClose: () => void;
 }
 
@@ -77,6 +81,9 @@ export function ModeManager({
   onUpdate,
   onDelete,
   onRestoreDefaults,
+  onTabSnapshotList,
+  onTabSnapshotRemove,
+  onTabSnapshotClear,
   onClose,
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -350,6 +357,16 @@ export function ModeManager({
                   }
                 />
               </label>
+            )}
+
+            {!creating && editingId && (
+              <TabSnapshotSection
+                modeId={editingId}
+                disabled={disabled || busy}
+                onList={onTabSnapshotList}
+                onRemove={onTabSnapshotRemove}
+                onClear={onTabSnapshotClear}
+              />
             )}
 
             {error && (
