@@ -22,6 +22,9 @@ import {
   handleTaskDeleteArchived,
   handleTaskToggle,
   handleTaskUpdate,
+  handleTabSnapshotClear,
+  handleTabSnapshotList,
+  handleTabSnapshotRemove,
   lockMode,
   restoreDefaultModes,
   switchMode,
@@ -137,6 +140,16 @@ export async function dispatchMessage(
 
       case 'GET_RESTORE_PROGRESS':
         return getRestoreProgress(message.jobId);
+
+      case 'TAB_SNAPSHOT_LIST':
+        return handleTabSnapshotList(message.modeId);
+
+      case 'TAB_SNAPSHOT_REMOVE':
+        await handleTabSnapshotRemove(message.modeId, message.index);
+        return undefined;
+
+      case 'TAB_SNAPSHOT_CLEAR':
+        return handleTabSnapshotClear(message.modeId, message.confirmed);
 
       default: {
         const _exhaustive: never = message;
