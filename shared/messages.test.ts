@@ -10,6 +10,15 @@ describe('isIncomingMessage', () => {
     expect(
       isIncomingMessage({ type: 'TASK_DELETE_ARCHIVED', modeId: 'work' }),
     ).toBe(true);
+    expect(
+      isIncomingMessage({ type: 'TAB_SNAPSHOT_LIST', modeId: 'work' }),
+    ).toBe(true);
+    expect(
+      isIncomingMessage({ type: 'TAB_SNAPSHOT_REMOVE', modeId: 'work', index: 0 }),
+    ).toBe(true);
+    expect(
+      isIncomingMessage({ type: 'TAB_SNAPSHOT_CLEAR', modeId: 'work', confirmed: true }),
+    ).toBe(true);
   });
 
   it('type がないオブジェクトは拒否する', () => {
