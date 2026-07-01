@@ -1,6 +1,6 @@
 import { CURRENT_SCHEMA_VERSION, MAX_BOOKMARKS_PER_MODE, MAX_TASKS_PER_MODE } from '@/shared/constants';
 import { FocusTabError } from './errors';
-import type { Bookmark, Settings, Task } from '@/shared/schemas';
+import type { Bookmark, Settings, TabSnapshot, Task } from '@/shared/schemas';
 import {
   bookmarkSchema,
   modeSchema,
@@ -284,6 +284,74 @@ export async function handleExportData() {
     exportedAt: new Date().toISOString(),
     schemaVersion: CURRENT_SCHEMA_VERSION,
   };
+}
+
+function assertModeExists(modes: { id: string }[], modeId: string): void {
+  if (!modes.some((m) => m.id === modeId)) {
+    throw new FocusTabError('INVALID_MODE', 'モードが見つかりません');
+  }
+}
+
+export async function handleTabSnapshotList(
+  modeId: string,
+): Promise<{ modeId: string; snapshots: TabSnapshot[] }> {
+  const data = await loadStorage();
+  assertModeExists(data.modes, modeId);
+  return {
+    modeId,
+    snapshots: data.tabSnapshots[modeId] ?? [],
+  };
+}
+
+export async function handleTabSnapshotRemove(modeId: string, index: number): Promise<void> {
+  await updateStorage((current) => {
+    assertModeExists(current.modes, modeId);
+
+    const snapshots = current.tabSnapshots[modeId] ?? [];
+    if (!Number.isInteger(index) || index < 0 || index >= snapshots.length) {
+      throw new FocusTabError('INTERNAL', 'スナップショットのインデックスが不正です');
+    }
+
+    const nextSnapshots = snapshots.filter((_, i) => i !== index);
+    return {
+      ...current,
+      tabSnapshots: {
+        ...current.tabSnapshots,
+        [modeId]: nextSnapshots,
+      },
+    };
+  });
+}
+
+export async function handleTabSnapshotClear(
+  modeId: string,
+  confirmed?: boolean,
+): Promise<{ clearedCount: number }> {
+  if (!confirmed) {
+    throw new FocusTabError('CONFIRMATION_REQUIRED', 'スナップショット一括削除の確認が必要です');
+  }
+
+  let clearedCount = 0;
+
+  await updateStorage((current) => {
+    assertModeExists(current.modes, modeId);
+
+    const snapshots = current.tabSnapshots[modeId] ?? [];
+    clearedCount = snapshots.length;
+    if (clearedCount === 0) {
+      return current;
+    }
+
+    return {
+      ...current,
+      tabSnapshots: {
+        ...current.tabSnapshots,
+        [modeId]: [],
+      },
+    };
+  });
+
+  return { clearedCount };
 }
 
 export async function handleImportData(json: string, confirmed: boolean): Promise<void> {
