@@ -270,3 +270,31 @@ npm run test:watch  # テストのウォッチモード
 ---
 
 ## ライセンス
+
+FocusTab のソースコードは [MIT License](https://opensource.org/licenses/MIT) の下で公開しています。GitHub への公開や Chrome 拡張機能としての配布を行う場合、利用条件を README または `LICENSE` ファイルで明示しておくことを推奨します。ライセンスを明記しない場合、著作権法上は **すべての権利が作者に留保** され、第三者による利用・改変・再配布の可否が不明確になります。
+
+```
+MIT License
+
+Copyright (c) 2026 yasuhirokikuchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+本プロジェクトは React、WXT など第三者ライブラリを利用しています。それらのライセンスは各パッケージの `package.json` または `node_modules` 内のライセンス表記に従います。
