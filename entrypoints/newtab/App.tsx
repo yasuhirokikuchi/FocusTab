@@ -1,6 +1,13 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { sendCommand } from '@/shared/messaging';
-import type { AppState, ModeSwitchResponse, TaskDeleteArchivedResponse } from '@/shared/messages';
+import type {
+  AppState,
+  ModeSwitchResponse,
+  TabSnapshotClearResponse,
+  TabSnapshotListResponse,
+  TaskDeleteArchivedResponse,
+} from '@/shared/messages';
+import type { TabSnapshot } from '@/shared/schemas';
 import type { Mode, SettingsSummary } from '@/shared/schemas';
 import { BookmarkList } from './components/BookmarkList';
 import { LockPanel } from './components/LockPanel';
@@ -280,6 +287,31 @@ export default function App() {
     await refresh();
   };
 
+  const handleTabSnapshotList = async (modeId: string): Promise<TabSnapshot[] | null> => {
+    const res = await sendCommand<TabSnapshotListResponse>({
+      type: 'TAB_SNAPSHOT_LIST',
+      modeId,
+    });
+    if (!res.ok || !res.data) {
+      return null;
+    }
+    return res.data.snapshots;
+  };
+
+  const handleTabSnapshotRemove = async (modeId: string, index: number): Promise<boolean> => {
+    const res = await sendCommand({ type: 'TAB_SNAPSHOT_REMOVE', modeId, index });
+    return res.ok;
+  };
+
+  const handleTabSnapshotClear = async (modeId: string): Promise<boolean> => {
+    const res = await sendCommand<TabSnapshotClearResponse>({
+      type: 'TAB_SNAPSHOT_CLEAR',
+      modeId,
+      confirmed: true,
+    });
+    return res.ok;
+  };
+
   const modeId = state?.activeModeId ?? 'work';
   const locked = Boolean(state?.lockState);
   const progress = state?.restoreProgress;
@@ -420,6 +452,9 @@ export default function App() {
           onUpdate={handleModeUpdate}
           onDelete={handleModeDelete}
           onRestoreDefaults={handleModeRestoreDefaults}
+          onTabSnapshotList={handleTabSnapshotList}
+          onTabSnapshotRemove={handleTabSnapshotRemove}
+          onTabSnapshotClear={handleTabSnapshotClear}
           onClose={() => setShowModeManager(false)}
         />
       )}
