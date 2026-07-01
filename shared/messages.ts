@@ -5,6 +5,7 @@ import type {
   ModeSummary,
   RestoreProgress,
   SettingsSummary,
+  TabSnapshot,
   Task,
 } from './schemas';
 
@@ -225,6 +226,32 @@ export interface GetRestoreProgressMessage {
   jobId?: string;
 }
 
+export interface TabSnapshotListMessage {
+  type: 'TAB_SNAPSHOT_LIST';
+  modeId: string;
+}
+
+export interface TabSnapshotListResponse {
+  modeId: string;
+  snapshots: TabSnapshot[];
+}
+
+export interface TabSnapshotRemoveMessage {
+  type: 'TAB_SNAPSHOT_REMOVE';
+  modeId: string;
+  index: number;
+}
+
+export interface TabSnapshotClearMessage {
+  type: 'TAB_SNAPSHOT_CLEAR';
+  modeId: string;
+  confirmed?: boolean;
+}
+
+export interface TabSnapshotClearResponse {
+  clearedCount: number;
+}
+
 export type IncomingMessage =
   | PingMessage
   | GetStateMessage
@@ -252,7 +279,10 @@ export type IncomingMessage =
   | ExportDataMessage
   | ImportDataMessage
   | GetDnrStatsMessage
-  | GetRestoreProgressMessage;
+  | GetRestoreProgressMessage
+  | TabSnapshotListMessage
+  | TabSnapshotRemoveMessage
+  | TabSnapshotClearMessage;
 
 export function isIncomingMessage(msg: unknown): msg is IncomingMessage {
   return (
