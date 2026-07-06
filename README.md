@@ -88,7 +88,7 @@ npm run zip
 
 <!-- ここにリンク: モードを切り替え、タブが退避・復元される流れが分かる短い GIF -->
 <p align="center">
-  <video src="docs/media/changeTab.mp4" autoplay loop muted playsinline width="100%"></video>
+  <img src="docs/media/changeTab.gif" alt="タスクの追加、編集、完了、アーカイブ操作" width="760">
 </p>
 
 ポータル上部のモードボタンから切り替えます。
