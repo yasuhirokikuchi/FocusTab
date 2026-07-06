@@ -288,7 +288,3 @@ FocusTab/
 ├── tests/                  # Vitest セットアップ、Chrome API モック
 └── wxt.config.ts
 ```
-
-## ライセンス
-
-(未定)
