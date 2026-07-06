@@ -101,7 +101,7 @@ npm run zip
 
 <!-- ここにリンク: タスクの追加、編集、完了、アーカイブが分かる短い GIF -->
 <p align="center">
-  <img src="docs/media/task.gif" alt="タスクの追加、編集、完了、アーカイブ操作" width="760">
+  <img src="docs/media/task.gif" alt="タスクの追加、編集、完了、アーカイブ操作" width="460">
 </p>
 
 左側のタスクパネルで、モードごとのタスクを管理できます。
