@@ -88,7 +88,7 @@ npm run zip
 
 <!-- ここにリンク: モードを切り替え、タブが退避・復元される流れが分かる短い GIF -->
 <p align="center">
-  <img src="docs/media/changeTab.gif" alt="モード切替でタブが退避・復元される流れ" width="760">
+  <video src="docs/media/changeTab.mp4" autoplay loop muted playsinline width="100%"></video>
 </p>
 
 ポータル上部のモードボタンから切り替えます。
