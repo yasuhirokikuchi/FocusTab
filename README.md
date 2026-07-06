@@ -88,7 +88,7 @@ npm run zip
 
 <!-- ここにリンク: モードを切り替え、タブが退避・復元される流れが分かる短い GIF -->
 <p align="center">
-  <img src="docs/media/chageTab.gif" alt="タスクの追加、編集、完了、アーカイブ操作" width="760">
+  <img src="docs/media/changeTab.gif" alt="タスクの追加、編集、完了、アーカイブ操作" width="760">
 </p>
 
 ポータル上部のモードボタンから切り替えます。
