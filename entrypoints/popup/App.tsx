@@ -3,6 +3,7 @@ import { sendCommand } from '@/shared/messaging';
 import type { AppState, ModeSwitchResponse } from '@/shared/messages';
 import { ModeSwitcher } from '../newtab/components/ModeSwitcher';
 import { formatRemainingTime, useLockCountdown } from '../newtab/hooks/useLockCountdown';
+import { useColorScheme } from '../newtab/hooks/useColorScheme';
 import './style.css';
 
 const PORTAL_URL = chrome.runtime.getURL('newtab.html');
@@ -68,6 +69,7 @@ export default function App() {
   };
 
   const theme = state?.activeMode.theme;
+  const resolvedColorScheme = useColorScheme(state?.settings.colorScheme ?? 'dark');
   const popupStyle = theme
     ? ({
         '--ft-accent': theme.accent,
@@ -75,7 +77,7 @@ export default function App() {
     : undefined;
 
   return (
-    <div className="popup" style={popupStyle}>
+    <div className="popup" data-color-scheme={resolvedColorScheme} style={popupStyle}>
       <header className="popup-header">
         <h1>FocusTab</h1>
       </header>

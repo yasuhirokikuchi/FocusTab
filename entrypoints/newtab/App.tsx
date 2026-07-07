@@ -17,6 +17,7 @@ import { OnboardingModal } from './components/OnboardingModal';
 import { SettingsPanel } from './components/SettingsPanel';
 import { TaskList } from './components/TaskList';
 import { useAppState } from './hooks/useAppState';
+import { useColorScheme } from './hooks/useColorScheme';
 import './style.css';
 
 export default function App() {
@@ -316,17 +317,21 @@ export default function App() {
   const locked = Boolean(state?.lockState);
   const progress = state?.restoreProgress;
   const theme = state?.activeMode.theme;
+  const resolvedColorScheme = useColorScheme(state?.settings.colorScheme ?? 'dark');
 
   const portalStyle = theme
     ? ({
         '--ft-accent': theme.accent,
-        '--ft-bg': theme.bg ?? '#1a1f2e',
-        '--ft-text': theme.text ?? '#e2e8f0',
       } as CSSProperties)
     : undefined;
 
   return (
-    <div className="portal" data-mode={modeId} style={portalStyle}>
+    <div
+      className="portal"
+      data-mode={modeId}
+      data-color-scheme={resolvedColorScheme}
+      style={portalStyle}
+    >
       <header className="portal-header">
         <div className="header-row">
           <h1>FocusTab</h1>

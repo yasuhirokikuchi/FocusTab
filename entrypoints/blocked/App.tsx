@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { sendCommand } from '@/shared/messaging';
 import type { AppState } from '@/shared/messages';
 import { EmergencyUnlockModal } from './components/EmergencyUnlockModal';
+import { useColorScheme } from '../newtab/hooks/useColorScheme';
 import './style.css';
 
 const PORTAL_URL = chrome.runtime.getURL('newtab.html');
@@ -27,6 +28,7 @@ export default function App() {
   const reason = useQueryParam('reason') ?? 'blacklist';
   const site = useQueryParam('site');
   const [modeName, setModeName] = useState('…');
+  const [colorSchemePref, setColorSchemePref] = useState<AppState['settings']['colorScheme']>('dark');
   const [locked, setLocked] = useState(false);
   const [showEmergency, setShowEmergency] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
@@ -35,10 +37,13 @@ export default function App() {
     void sendCommand<AppState>({ type: 'GET_STATE' }).then((res) => {
       if (res.ok && res.data) {
         setModeName(res.data.activeMode.name);
+        setColorSchemePref(res.data.settings.colorScheme);
         setLocked(isLockActive(res.data.lockState));
       }
     });
   }, []);
+
+  const resolvedColorScheme = useColorScheme(colorSchemePref);
 
   const handleUnlockSuccess = () => {
     setUnlocked(true);
@@ -46,7 +51,7 @@ export default function App() {
   };
 
   return (
-    <div className="blocked">
+    <div className="blocked" data-color-scheme={resolvedColorScheme}>
       <div className="main">
         <h1>現在は{modeName}モードです</h1>
         {unlocked ? (
