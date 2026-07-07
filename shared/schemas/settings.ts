@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { COLOR_SCHEME_PREFERENCES } from '../color-scheme';
 import {
   RESTORE_BATCH_SIZE_MAX,
   RESTORE_BATCH_SIZE_MIN,
@@ -13,6 +14,7 @@ export const settingsSchema = z.object({
     .max(RESTORE_BATCH_SIZE_MAX),
   onboardingCompleted: z.boolean(),
   showRestoreProgress: z.boolean(),
+  colorScheme: z.enum(COLOR_SCHEME_PREFERENCES).default('dark'),
 });
 
 export const settingsSummarySchema = settingsSchema.pick({
@@ -20,6 +22,7 @@ export const settingsSummarySchema = settingsSchema.pick({
   showRestoreProgress: true,
   onboardingCompleted: true,
   restoreBatchSize: true,
+  colorScheme: true,
 });
 
 export type Settings = z.infer<typeof settingsSchema>;
@@ -30,4 +33,5 @@ export const defaultSettings: Settings = {
   restoreBatchSize: 3,
   onboardingCompleted: false,
   showRestoreProgress: true,
+  colorScheme: 'dark',
 };
