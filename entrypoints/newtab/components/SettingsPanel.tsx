@@ -6,6 +6,10 @@ import {
   RESTORE_BATCH_SIZE_MAX,
   RESTORE_BATCH_SIZE_MIN,
 } from '@/shared/constants';
+import {
+  COLOR_SCHEME_LABELS,
+  COLOR_SCHEME_PREFERENCES,
+} from '@/shared/color-scheme';
 
 interface Props {
   settings: SettingsSummary;
@@ -76,6 +80,22 @@ export function SettingsPanel({ settings, disabled, onUpdate, onClose }: Props) 
     >
       <div className="modal-card settings-card">
         <h2 id="settings-title">設定</h2>
+
+        <fieldset className="settings-group" disabled={disabled || busy}>
+          <legend>表示</legend>
+          {COLOR_SCHEME_PREFERENCES.map((scheme) => (
+            <label key={scheme} className="radio-row">
+              <input
+                type="radio"
+                name="colorScheme"
+                value={scheme}
+                checked={settings.colorScheme === scheme}
+                onChange={() => void onUpdate({ colorScheme: scheme })}
+              />
+              {COLOR_SCHEME_LABELS[scheme]}
+            </label>
+          ))}
+        </fieldset>
 
         <fieldset className="settings-group" disabled={disabled || busy}>
           <legend>モード切替</legend>
