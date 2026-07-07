@@ -1,9 +1,5 @@
 .blocked {
-  --ft-bg: #1a1f2e;
-  --ft-text: #e2e8f0;
-  --ft-muted: #64748b;
   --ft-accent: #3b82f6;
-  --ft-border: rgba(148, 163, 184, 0.25);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -11,7 +7,32 @@
   justify-content: center;
   background: var(--ft-bg);
   color: var(--ft-text);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+.blocked[data-color-scheme="dark"] {
+  color-scheme: dark;
+  --ft-bg: #1a1f2e;
+  --ft-text: #e2e8f0;
+  --ft-muted: #64748b;
+  --ft-border: rgba(148, 163, 184, 0.25);
+  --ft-input-bg: rgba(0, 0, 0, 0.2);
+  --ft-overlay: rgba(0, 0, 0, 0.75);
+  --ft-surface: rgba(255, 255, 255, 0.04);
+}
+
+.blocked[data-color-scheme="light"] {
+  color-scheme: light;
+  --ft-bg: #f1f5f9;
+  --ft-text: #0f172a;
+  --ft-muted: #64748b;
+  --ft-border: rgba(100, 116, 139, 0.28);
+  --ft-input-bg: rgba(255, 255, 255, 0.95);
+  --ft-overlay: rgba(15, 23, 42, 0.45);
+  --ft-surface: rgba(255, 255, 255, 0.92);
 }
 
 .main {
@@ -79,7 +100,7 @@ h1 {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: var(--ft-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -114,7 +135,7 @@ h1 {
   padding: 0.75rem 1rem;
   margin: 0 0 1rem;
   border-left: 3px solid var(--ft-accent);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--ft-surface);
   color: var(--ft-text);
 }
 
@@ -123,7 +144,7 @@ h1 {
   padding: 0.75rem;
   border-radius: 8px;
   border: 1px solid var(--ft-border);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--ft-input-bg);
   color: var(--ft-text);
   font-size: 0.875rem;
   font-family: inherit;
