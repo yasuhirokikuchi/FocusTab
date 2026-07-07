@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "FocusTab",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "モード切替でタブ・閲覧環境を一括制御する集中支援拡張機能。すべてのデータはブラウザ内にのみ保存されます。",
   "permissions": [
     "tabs",
