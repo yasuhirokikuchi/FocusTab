@@ -46,6 +46,7 @@ export async function buildAppState() {
       showRestoreProgress: data.settings.showRestoreProgress,
       onboardingCompleted: data.settings.onboardingCompleted,
       restoreBatchSize: data.settings.restoreBatchSize,
+      colorScheme: data.settings.colorScheme,
     },
   };
 }
