@@ -3,6 +3,7 @@ import type { LockState } from '@/shared/schemas';
 import { LOCK_DURATION_MAX, LOCK_DURATION_MIN } from '@/shared/constants';
 import { parseLockDurationInput } from '@/shared/lock-duration';
 import { formatRemainingTime, useLockCountdown } from '../hooks/useLockCountdown';
+import { LockTimerRing } from './LockTimerRing';
 
 const LOCK_PRESETS = [15, 30, 60, 120] as const;
 
@@ -47,13 +48,9 @@ export function LockPanel({ lockState, disabled, onLock }: Props) {
 
       {locked && lockState ? (
         <div className="lock-active" role="status" aria-live="polite">
-          <span className="lock-icon" aria-hidden="true">
-            🔒
-          </span>
+          <LockTimerRing lockState={lockState} remainingMs={remainingMs} />
           <p className="lock-message">ロック中 — モード切替不可</p>
-          <p className="lock-remaining">
-            残り <strong>{formatRemainingTime(remainingMs)}</strong>
-          </p>
+          <p className="sr-only">残り {formatRemainingTime(remainingMs)}</p>
           <p className="muted lock-hint">
             モードロックの緊急解除は、制限サイトを開いたときのブロック画面右下から可能です（サイトの制限は解除されません）
           </p>

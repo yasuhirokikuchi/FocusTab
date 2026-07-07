@@ -463,20 +463,61 @@
   padding: 0.5rem 0;
 }
 
-.lock-icon {
-  font-size: 2rem;
+.lock-timer-ring-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 132px;
+  height: 132px;
+  margin: 0 auto 1rem;
+}
+
+.lock-timer-ring {
   display: block;
-  margin-bottom: 0.5rem;
+  transform: rotate(-90deg);
+}
+
+.lock-timer-track {
+  fill: none;
+  stroke: var(--ft-border);
+}
+
+.lock-timer-progress {
+  fill: none;
+  stroke: var(--ft-accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.lock-timer-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ft-text);
+  pointer-events: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .lock-message {
   font-weight: 600;
   margin-bottom: 0.25rem;
-}
-
-.lock-remaining strong {
-  color: var(--ft-accent);
-  font-size: 1.25rem;
 }
 
 .lock-hint {
