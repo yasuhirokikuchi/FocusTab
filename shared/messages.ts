@@ -191,6 +191,7 @@ export interface SettingsUpdateMessage {
     restoreBatchSize: number;
     onboardingCompleted: boolean;
     showRestoreProgress: boolean;
+    colorScheme: SettingsSummary['colorScheme'];
   }>;
 }
 
