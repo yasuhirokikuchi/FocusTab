@@ -6,7 +6,10 @@ import {
   addMockTab,
   getMockTabs,
   getSessionSnapshot,
+  MOCK_WINDOW_ID,
+  MOCK_WINDOW_ID_2,
   queryTabs,
+  resetTabsMock,
   restoreChromeTabMocks,
   seedStorage,
 } from '../../../tests/helpers/chrome-mock';
@@ -167,5 +170,78 @@ describe('switchMode', () => {
     expect(after.activeModeId).toBe(before.activeModeId);
     expect(after.tabSnapshots).toEqual(before.tabSnapshots);
     expect(vi.mocked(chrome.declarativeNetRequest.updateDynamicRules)).not.toHaveBeenCalled();
+  });
+
+  it('別ウィンドウのタブも退避する', async () => {
+    resetTabsMock();
+    seedSwitchableStorage();
+    addMockTab({
+      url: FOCUS_TAB_URL,
+      title: 'FocusTab',
+      active: true,
+      windowId: MOCK_WINDOW_ID,
+    });
+    addMockTab({
+      url: 'https://github.com/focustab',
+      title: 'GitHub',
+      windowId: MOCK_WINDOW_ID,
+    });
+    addMockTab({
+      url: 'https://example.com/dragged',
+      title: 'Dragged',
+      windowId: MOCK_WINDOW_ID_2,
+    });
+
+    const result = await switchMode('study', {
+      confirmed: true,
+      senderWindowId: MOCK_WINDOW_ID,
+    });
+
+    expect(result.evacuatedTabCount).toBe(2);
+
+    const after = await loadStorage();
+    expect(after.tabSnapshots.work).toHaveLength(2);
+    expect(after.tabSnapshots.work.map((s) => s.url)).toEqual(
+      expect.arrayContaining([
+        'https://github.com/focustab',
+        'https://example.com/dragged',
+      ]),
+    );
+    expect(getMockTabs().some((tab) => tab.url === 'https://example.com/dragged')).toBe(
+      false,
+    );
+  });
+
+  it('退避0件のとき既存スナップショットを保持する', async () => {
+    const existingWork: TabSnapshot[] = [
+      {
+        url: 'https://saved.example.com',
+        title: 'Saved',
+        pinned: false,
+        index: 0,
+        savedAt: ISO,
+      },
+    ];
+
+    resetTabsMock();
+    seedSwitchableStorage();
+    seedStorage({
+      ...(await loadStorage()),
+      tabSnapshots: {
+        study: [studyRestoreSnapshot()],
+        work: existingWork,
+      },
+    });
+    addMockTab({
+      url: FOCUS_TAB_URL,
+      title: 'FocusTab',
+      active: true,
+      windowId: MOCK_WINDOW_ID,
+    });
+
+    await switchMode('study', { confirmed: true, senderWindowId: MOCK_WINDOW_ID });
+
+    const after = await loadStorage();
+    expect(after.tabSnapshots.work).toEqual(existingWork);
   });
 });
