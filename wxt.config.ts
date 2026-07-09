@@ -14,6 +14,7 @@ export default defineConfig({
       'モード切替でタブ・閲覧環境を一括制御する集中支援拡張機能。すべてのデータはブラウザ内にのみ保存されます。',
     permissions: [
       'tabs',
+      'windows',
       'storage',
       'alarms',
       'declarativeNetRequest',

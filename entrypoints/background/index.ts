@@ -71,7 +71,10 @@ export default defineBackground(() => {
         return true;
       }
 
-      void dispatchMessage(raw, { senderTabId: sender.tab?.id })
+      void dispatchMessage(raw, {
+        senderTabId: sender.tab?.id,
+        senderWindowId: sender.tab?.windowId,
+      })
         .then((data) => sendResponse({ ok: true, data }))
         .catch((err: unknown) => {
           sendResponse({ ok: false, error: toMessageError(err) });

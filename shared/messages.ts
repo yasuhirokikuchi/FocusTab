@@ -58,6 +58,10 @@ export interface ModeSwitchMessage {
   type: 'MODE_SWITCH';
   targetModeId: string;
   confirmed?: boolean;
+  /** ポップアップなど sender.tab がない場合の復元先ウィンドウ */
+  senderWindowId?: number;
+  /** UI 側で収集した全タブ参照（SW の query 漏れ対策） */
+  clientTabRefs?: import('./evacuation-windows').ClientTabRef[];
 }
 
 export interface ModeSwitchResponse {

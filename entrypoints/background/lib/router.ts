@@ -34,6 +34,7 @@ import {
 
 export interface DispatchContext {
   senderTabId?: number;
+  senderWindowId?: number;
 }
 
 export async function dispatchMessage(
@@ -52,6 +53,8 @@ export async function dispatchMessage(
         return switchMode(message.targetModeId, {
           confirmed: message.confirmed,
           senderTabId: ctx?.senderTabId,
+          senderWindowId: message.senderWindowId ?? ctx?.senderWindowId,
+          clientTabRefs: message.clientTabRefs,
         });
 
       case 'MODE_CREATE':

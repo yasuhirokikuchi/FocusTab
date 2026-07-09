@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { sendCommand } from '@/shared/messaging';
+import { collectClientTabRefs } from '@/shared/evacuation-windows';
 import type {
   AppState,
   ModeSwitchResponse,
@@ -51,10 +52,14 @@ export default function App() {
 
     setSwitching(true);
     setError(null);
+    const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const clientTabRefs = await collectClientTabRefs();
     const res = await sendCommand<ModeSwitchResponse>({
       type: 'MODE_SWITCH',
       targetModeId,
       confirmed: true,
+      senderWindowId: currentTab?.windowId,
+      clientTabRefs,
     });
     setSwitching(false);
 

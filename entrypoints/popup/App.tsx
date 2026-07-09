@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import { sendCommand } from '@/shared/messaging';
+import { collectClientTabRefs } from '@/shared/evacuation-windows';
 import type { AppState, ModeSwitchResponse } from '@/shared/messages';
 import { ModeSwitcher } from '../newtab/components/ModeSwitcher';
 import { formatRemainingTime, useLockCountdown } from '../newtab/hooks/useLockCountdown';
@@ -54,10 +55,14 @@ export default function App() {
 
     setSwitching(true);
     setError(null);
+    const currentWindow = await chrome.windows.getCurrent();
+    const clientTabRefs = await collectClientTabRefs();
     const res = await sendCommand<ModeSwitchResponse>({
       type: 'MODE_SWITCH',
       targetModeId,
       confirmed: true,
+      senderWindowId: currentWindow.id,
+      clientTabRefs,
     });
     setSwitching(false);
 

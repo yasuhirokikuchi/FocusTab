@@ -6,8 +6,14 @@ let storageData: Record<string, unknown> = {};
 let sessionData: Record<string, unknown> = {};
 let mockTabs: chrome.tabs.Tab[] = [];
 let nextTabId = 1;
+let mockWindows = new Map<number, { incognito: boolean }>();
 
 export const MOCK_WINDOW_ID = 1;
+export const MOCK_WINDOW_ID_2 = 2;
+
+function ensureMockWindow(windowId: number, incognito = false): void {
+  mockWindows.set(windowId, { incognito });
+}
 
 export function seedStorage(data: StorageSchema): void {
   storageData = storageToRecord(data);
@@ -34,6 +40,7 @@ export function getMockTabs(): chrome.tabs.Tab[] {
 export function resetTabsMock(): void {
   mockTabs = [];
   nextTabId = 1;
+  mockWindows = new Map([[MOCK_WINDOW_ID, { incognito: false }]]);
 }
 
 export function resetSessionMock(): void {
@@ -42,6 +49,7 @@ export function resetSessionMock(): void {
 
 export function addMockTab(partial: Partial<chrome.tabs.Tab> = {}): chrome.tabs.Tab {
   const windowId = partial.windowId ?? MOCK_WINDOW_ID;
+  ensureMockWindow(windowId, partial.incognito ?? false);
   const tab = {
     id: nextTabId++,
     windowId,
@@ -73,6 +81,30 @@ export async function queryTabs(queryInfo: chrome.tabs.QueryInfo = {}): Promise<
   }
 
   return tabs;
+}
+
+export async function getAllWindows(
+  queryInfo: chrome.windows.QueryOptions = {},
+): Promise<chrome.windows.Window[]> {
+  let windows = [...mockWindows.entries()].map(([id, meta]) => ({
+    id,
+    incognito: meta.incognito,
+    type: 'normal' as const,
+  }));
+
+  if (queryInfo.windowTypes?.length) {
+    windows = windows.filter((w) => queryInfo.windowTypes!.includes(w.type));
+  }
+
+  return windows;
+}
+
+export async function getMockTab(tabId: number): Promise<chrome.tabs.Tab> {
+  const tab = mockTabs.find((t) => t.id === tabId);
+  if (!tab) {
+    throw new Error(`Tab ${tabId} not found`);
+  }
+  return tab;
 }
 
 export function installChromeMocks(): void {
@@ -138,6 +170,7 @@ export function installChromeMocks(): void {
     },
     tabs: {
       query: vi.fn(queryTabs),
+      get: vi.fn(getMockTab),
       create: vi.fn(async (createProperties: chrome.tabs.CreateProperties) =>
         addMockTab({
           url: createProperties.url,
@@ -153,6 +186,14 @@ export function installChromeMocks(): void {
       update: vi.fn(),
       onUpdated: { addListener: vi.fn() },
     },
+    windows: {
+      getAll: vi.fn(getAllWindows),
+      getCurrent: vi.fn(async () => ({
+        id: MOCK_WINDOW_ID,
+        incognito: false,
+        type: 'normal' as const,
+      })),
+    },
     declarativeNetRequest: {
       updateDynamicRules: vi.fn(async () => undefined),
       getDynamicRules: vi.fn(async () => []),
@@ -167,6 +208,8 @@ export function installChromeMocks(): void {
 /** tabs API モックを既定実装に戻す（テスト内で mockRejectedValue 等を使った後） */
 export function restoreChromeTabMocks(): void {
   vi.mocked(chrome.tabs.query).mockImplementation(queryTabs);
+  vi.mocked(chrome.tabs.get).mockImplementation(getMockTab);
+  vi.mocked(chrome.windows.getAll).mockImplementation(getAllWindows);
   vi.mocked(chrome.tabs.create).mockImplementation(
     async (createProperties: chrome.tabs.CreateProperties) =>
       addMockTab({

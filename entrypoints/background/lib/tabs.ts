@@ -7,10 +7,15 @@ import type { RestoreProgress, RestoreQueue, TabSnapshot } from '@/shared/schema
 import { restoreQueueSchema } from '@/shared/schemas';
 import { patchStorage } from './state';
 import { isExcludedTabUrl, isFocusTabPageUrl } from './blocking';
+import type { ClientTabRef } from '@/shared/evacuation-windows';
 
 export interface EvacuateTabsOptions {
   /** MODE_SWITCH 送信元タブ — 退避・クローズ対象から除外 */
   keepTabId?: number;
+  /** true のとき、退避後にタブがなくなるウィンドウへアンカータブを作らない */
+  skipAnchorTab?: boolean;
+  /** UI 側で収集したタブ参照（Service Worker の query 漏れ対策） */
+  clientTabRefs?: ClientTabRef[];
 }
 
 function shouldKeepTabDuringEvacuation(
@@ -47,6 +52,34 @@ export async function getCurrentWindowId(): Promise<number> {
   return tab.windowId;
 }
 
+/** モード切替の復元先ウィンドウを決定する */
+export async function resolveRestoreWindowId(options?: {
+  senderWindowId?: number;
+  senderTabId?: number;
+}): Promise<number> {
+  if (options?.senderWindowId != null) {
+    return options.senderWindowId;
+  }
+  if (options?.senderTabId != null) {
+    try {
+      const tab = await chrome.tabs.get(options.senderTabId);
+      if (tab.windowId != null) return tab.windowId;
+    } catch {
+      // fall through
+    }
+  }
+  return getCurrentWindowId();
+}
+
+/** 退避結果が空のときは既存スナップショットを保持する */
+export function buildModeSnapshot(
+  evacuated: TabSnapshot[],
+  existing: TabSnapshot[] | undefined,
+): TabSnapshot[] {
+  if (evacuated.length > 0) return evacuated;
+  return existing ?? [];
+}
+
 export async function evacuateTabs(
   windowId: number,
   options?: EvacuateTabsOptions,
@@ -72,7 +105,7 @@ export async function evacuateTabs(
   }
 
   const remainingAfterRemoval = tabs.length - evacuatable.length;
-  if (remainingAfterRemoval === 0) {
+  if (remainingAfterRemoval === 0 && !options?.skipAnchorTab) {
     await ensureAnchorTab(windowId);
   }
 
@@ -85,6 +118,121 @@ export async function evacuateTabs(
   }
 
   return trimmed;
+}
+
+/** UI が渡した tabId を直接参照して退避（SW の tabs.query 漏れを回避） */
+async function evacuateViaClientTabRefs(
+  restoreWindowId: number,
+  clientTabRefs: ClientTabRef[],
+  options?: EvacuateTabsOptions,
+): Promise<TabSnapshot[]> {
+  const now = new Date().toISOString();
+  const toRemove: number[] = [];
+  const snapshots: TabSnapshot[] = [];
+
+  for (const ref of clientTabRefs) {
+    let tab: chrome.tabs.Tab;
+    try {
+      tab = await chrome.tabs.get(ref.tabId);
+    } catch {
+      continue;
+    }
+    if (tab.incognito || tab.id == null || tab.windowId == null) continue;
+    if (shouldKeepTabDuringEvacuation(tab, options?.keepTabId)) continue;
+
+    toRemove.push(tab.id);
+    snapshots.push({
+      url: tab.url ?? 'about:blank',
+      title: tab.title ?? '',
+      pinned: tab.pinned ?? false,
+      index: snapshots.length,
+      savedAt: now,
+    });
+  }
+
+  const trimmed = trimSnapshots(snapshots);
+  if (toRemove.length === 0) return trimmed;
+
+  const affectedWindows = new Set(clientTabRefs.map((r) => r.windowId));
+  affectedWindows.add(restoreWindowId);
+
+  for (const tabId of toRemove) {
+    try {
+      await chrome.tabs.remove(tabId);
+    } catch (err) {
+      console.warn('[FocusTab] Tab close skipped:', tabId, err);
+    }
+  }
+
+  for (const windowId of affectedWindows) {
+    const remaining = (await chrome.tabs.query({ windowId })).filter((t) => !t.incognito);
+    if (remaining.length === 0 && windowId === restoreWindowId) {
+      await ensureAnchorTab(windowId);
+    }
+  }
+
+  return trimmed;
+}
+
+/** 退避対象ウィンドウ ID — tabs.query を主軸に収集（getAll だけでは検出漏れする場合がある） */
+async function getEvacuationWindowIds(restoreWindowId: number): Promise<{
+  windowIds: number[];
+  fromGetAll: number[];
+  fromTabsQuery: number[];
+}> {
+  const [allTabs, allWindows] = await Promise.all([
+    chrome.tabs.query({}),
+    chrome.windows.getAll({ windowTypes: ['normal'] }),
+  ]);
+
+  const fromTabsQuery = new Set<number>();
+  for (const tab of allTabs) {
+    if (tab.incognito || tab.windowId == null) continue;
+    fromTabsQuery.add(tab.windowId);
+  }
+
+  const fromGetAll = allWindows
+    .filter((w) => w.id != null && !w.incognito)
+    .map((w) => w.id!);
+
+  const windowIds = new Set<number>([...fromTabsQuery, ...fromGetAll, restoreWindowId]);
+  return {
+    windowIds: [...windowIds],
+    fromGetAll,
+    fromTabsQuery: [...fromTabsQuery],
+  };
+}
+
+/** 通常ウィンドウすべてからタブを退避する（ドラッグで分離したウィンドウを含む） */
+export async function evacuateAllWindows(
+  restoreWindowId: number,
+  options?: EvacuateTabsOptions,
+): Promise<TabSnapshot[]> {
+  if (options?.clientTabRefs && options.clientTabRefs.length > 0) {
+    return evacuateViaClientTabRefs(
+      restoreWindowId,
+      options.clientTabRefs,
+      options,
+    );
+  }
+
+  const { windowIds } = await getEvacuationWindowIds(restoreWindowId);
+
+  const allSnapshots: TabSnapshot[] = [];
+  let indexOffset = 0;
+
+  for (const windowId of windowIds) {
+    const isRestoreWindow = windowId === restoreWindowId;
+    const snapshots = await evacuateTabs(windowId, {
+      keepTabId: isRestoreWindow ? options?.keepTabId : undefined,
+      skipAnchorTab: !isRestoreWindow,
+    });
+    for (const snap of snapshots) {
+      allSnapshots.push({ ...snap, index: indexOffset++ });
+    }
+  }
+
+  return trimSnapshots(allSnapshots);
 }
 
 export async function restoreEvacuatedTabs(
@@ -124,8 +272,11 @@ async function updateProgress(progress: RestoreProgress | null): Promise<void> {
 }
 
 let restoreRunning = false;
+let restoreGeneration = 0;
 
-async function processBatch(queue: RestoreQueue): Promise<void> {
+async function processBatch(queue: RestoreQueue, generation: number): Promise<void> {
+  if (generation !== restoreGeneration) return;
+
   const data = await chrome.storage.local.get(STORAGE_KEYS.SETTINGS);
   const batchSize =
     typeof data.settings?.restoreBatchSize === 'number'
@@ -134,6 +285,7 @@ async function processBatch(queue: RestoreQueue): Promise<void> {
 
   const batch = queue.snapshots.slice(queue.nextIndex, queue.nextIndex + batchSize);
   if (batch.length === 0) {
+    if (generation !== restoreGeneration) return;
     await updateProgress({
       jobId: queue.jobId,
       modeId: queue.modeId,
@@ -142,7 +294,9 @@ async function processBatch(queue: RestoreQueue): Promise<void> {
       status: 'completed',
     });
     await saveQueue(null);
-    restoreRunning = false;
+    if (generation === restoreGeneration) {
+      restoreRunning = false;
+    }
     return;
   }
 
@@ -159,6 +313,8 @@ async function processBatch(queue: RestoreQueue): Promise<void> {
     }
   }
 
+  if (generation !== restoreGeneration) return;
+
   const nextIndex = queue.nextIndex + batch.length;
   const completed = nextIndex;
 
@@ -174,6 +330,7 @@ async function processBatch(queue: RestoreQueue): Promise<void> {
   await saveQueue(nextQueue);
 
   if (nextIndex >= queue.snapshots.length) {
+    if (generation !== restoreGeneration) return;
     await updateProgress({
       jobId: queue.jobId,
       modeId: queue.modeId,
@@ -182,12 +339,14 @@ async function processBatch(queue: RestoreQueue): Promise<void> {
       status: 'completed',
     });
     await saveQueue(null);
-    restoreRunning = false;
+    if (generation === restoreGeneration) {
+      restoreRunning = false;
+    }
     return;
   }
 
   setTimeout(() => {
-    void processBatch(nextQueue);
+    void processBatch(nextQueue, generation);
   }, RESTORE_BATCH_DELAY_MS);
 }
 
@@ -226,10 +385,10 @@ export async function startRestore(
     status: 'running',
   });
 
-  if (!restoreRunning) {
-    restoreRunning = true;
-    void processBatch(queue);
-  }
+  restoreGeneration += 1;
+  const generation = restoreGeneration;
+  restoreRunning = true;
+  void processBatch(queue, generation);
 
   return jobId;
 }
@@ -245,8 +404,10 @@ export async function getRestoreProgress(jobId?: string): Promise<RestoreProgres
 export async function resumeRestoreIfNeeded(): Promise<void> {
   const queue = await loadQueue();
   if (!queue || restoreRunning) return;
+  restoreGeneration += 1;
+  const generation = restoreGeneration;
   restoreRunning = true;
-  void processBatch(queue);
+  void processBatch(queue, generation);
 }
 
 export async function cancelRestore(jobId: string): Promise<void> {
@@ -261,5 +422,6 @@ export async function cancelRestore(jobId: string): Promise<void> {
     completed: queue.nextIndex,
     status: 'cancelled',
   });
+  restoreGeneration += 1;
   restoreRunning = false;
 }

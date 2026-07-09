@@ -7,8 +7,9 @@ import { applyRulesForMode } from './blocking';
 import { assertNotLocked } from './lock';
 import { loadStorage, saveStorage, updateStorage } from './state';
 import {
-  evacuateTabs,
-  getCurrentWindowId,
+  buildModeSnapshot,
+  evacuateAllWindows,
+  resolveRestoreWindowId,
   restoreEvacuatedTabs,
   startRestore,
 } from './tabs';
@@ -26,7 +27,12 @@ export async function getActiveMode(): Promise<Mode> {
 
 export async function switchMode(
   targetModeId: string,
-  options?: { confirmed?: boolean; senderTabId?: number },
+  options?: {
+    confirmed?: boolean;
+    senderTabId?: number;
+    senderWindowId?: number;
+    clientTabRefs?: import('@/shared/evacuation-windows').ClientTabRef[];
+  },
 ): Promise<{ restoreJobId: string; evacuatedTabCount: number }> {
   if (switchInFlight) {
     throw new FocusTabError('INTERNAL', 'モード切替処理中です。しばらくお待ちください');
@@ -60,20 +66,26 @@ export async function switchMode(
       throw new FocusTabError('INTERNAL', '現在のモードが見つかりません');
     }
 
-    const windowId = await getCurrentWindowId();
+    const windowId = await resolveRestoreWindowId({
+      senderWindowId: options?.senderWindowId,
+      senderTabId: options?.senderTabId,
+    });
 
     // Phase B: 退避（現モードのスナップショット保存 + タブ閉じ）
-    let evacuated: Awaited<ReturnType<typeof evacuateTabs>>;
+    let evacuated: Awaited<ReturnType<typeof evacuateAllWindows>>;
     try {
-      evacuated = await evacuateTabs(windowId, { keepTabId: options?.senderTabId });
+      evacuated = await evacuateAllWindows(windowId, {
+        keepTabId: options?.senderTabId,
+        clientTabRefs: options?.clientTabRefs,
+      });
     } catch (err) {
-      console.error('[FocusTab] evacuateTabs failed', err);
+      console.error('[FocusTab] evacuateAllWindows failed', err);
       throw new FocusTabError('TAB_OPERATION_FAILED', 'タブの退避に失敗しました');
     }
 
     const tabSnapshots = {
       ...data.tabSnapshots,
-      [previousModeId]: evacuated,
+      [previousModeId]: buildModeSnapshot(evacuated, data.tabSnapshots[previousModeId]),
     };
 
     // Phase C: DNR 更新
