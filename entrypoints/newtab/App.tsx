@@ -19,6 +19,7 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { TaskList } from './components/TaskList';
 import { useAppState } from './hooks/useAppState';
 import { useColorScheme } from './hooks/useColorScheme';
+import { useLockCountdown } from './hooks/useLockCountdown';
 import './style.css';
 
 export default function App() {
@@ -26,6 +27,8 @@ export default function App() {
   const [switching, setSwitching] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showModeManager, setShowModeManager] = useState(false);
+  const remainingMs = useLockCountdown(state?.lockState ?? null);
+  const locked = Boolean(state?.lockState && remainingMs > 0);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -35,7 +38,7 @@ export default function App() {
   }, []);
 
   const handleSwitch = async (targetModeId: string) => {
-    if (!state || state.lockState) return;
+    if (!state || locked) return;
 
     const needsConfirm = state.settings.confirmModeSwitch;
     if (needsConfirm) {
@@ -319,7 +322,6 @@ export default function App() {
   };
 
   const modeId = state?.activeModeId ?? 'work';
-  const locked = Boolean(state?.lockState);
   const progress = state?.restoreProgress;
   const theme = state?.activeMode.theme;
   const resolvedColorScheme = useColorScheme(state?.settings.colorScheme ?? 'dark');
