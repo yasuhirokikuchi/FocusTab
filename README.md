@@ -211,8 +211,8 @@ Chrome のツールバーにある FocusTab アイコンをクリックすると
 
 | モード | 閲覧制限 | ブロック例                                          |
 | ------ | -------- | --------------------------------------------------- |
-| 仕事   | あり     | YouTube、X、Instagram、TikTok、Reddit、Netflix など |
-| 学習   | あり     | YouTube、X、Instagram、TikTok、Reddit など          |
+| 仕事   | あり     | YouTube、Netflix、Twitch、X、Instagram、TikTok など |
+| 学習   | あり     | X、Instagram、TikTok、Amazon、楽天、Yahoo!ニュースなど（YouTube は許可） |
 | 趣味   | なし     | なし                                                |
 
 サンプルのタスクとブックマークも登録されます。
