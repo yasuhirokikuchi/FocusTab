@@ -10,10 +10,16 @@ import {
   taskSchema,
 } from '@/shared/schemas';
 import { loadStorage, updateStorage } from './state';
-import { createMode, deleteMode, restoreDefaultModes, updateMode } from './mode';
+import {
+  createMode,
+  deleteMode,
+  restoreDefaultModes,
+  switchMode,
+  syncBlockingWithActiveMode,
+  updateMode,
+} from './mode';
 import { emergencyUnlock, lockMode, unlockMode } from './lock';
 import { getRestoreProgress } from './tabs';
-import { switchMode } from './mode';
 
 export async function buildAppState() {
   const data = await loadStorage();
@@ -367,6 +373,8 @@ export async function handleImportData(json: string, confirmed: boolean): Promis
   }
   const data = storageSchema.parse(parsed);
   await updateStorage(() => data);
+  // storage 上書き後、現行の DNR ルールをアクティブモードに合わせる
+  await syncBlockingWithActiveMode();
 }
 
 export {
