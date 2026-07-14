@@ -6,8 +6,9 @@ import { SESSION_KEYS, STORAGE_KEYS } from '@/shared/storage-keys';
 import type { RestoreProgress, RestoreQueue, TabSnapshot } from '@/shared/schemas';
 import { restoreQueueSchema } from '@/shared/schemas';
 import { patchStorage } from './state';
-import { isExcludedTabUrl, isFocusTabPageUrl } from './blocking';
+import { isExcludedTabUrl, isFocusTabPageUrl, isBlockedPageUrl, resolveUrlForEvacuation, domainMatchesBlacklist } from './blocking';
 import type { ClientTabRef } from '@/shared/evacuation-windows';
+import type { Mode } from '@/shared/schemas';
 
 export interface EvacuateTabsOptions {
   /** MODE_SWITCH 送信元タブ — 退避・クローズ対象から除外 */
@@ -24,6 +25,8 @@ function shouldKeepTabDuringEvacuation(
 ): boolean {
   if (tab.id == null) return true;
   if (keepTabId !== undefined && tab.id === keepTabId) return true;
+  // ブロック画面はアクセス制限タブとして退避する（chrome-extension でも閉じる）
+  if (isBlockedPageUrl(tab.url)) return false;
   if (isExcludedTabUrl(tab.url)) return true;
   if (isFocusTabPageUrl(tab.url)) return true;
   return false;
@@ -80,6 +83,15 @@ export function buildModeSnapshot(
   return existing ?? [];
 }
 
+/** 制限モードではブラックリストに当たるタブを復元しない（スナップショット自体は保持） */
+export function filterSnapshotsForMode(
+  snapshots: TabSnapshot[],
+  mode: Mode,
+): TabSnapshot[] {
+  if (!mode.isRestrictive || mode.blacklist.length === 0) return snapshots;
+  return snapshots.filter((snap) => !domainMatchesBlacklist(snap.url, mode.blacklist));
+}
+
 export async function evacuateTabs(
   windowId: number,
   options?: EvacuateTabsOptions,
@@ -91,7 +103,7 @@ export async function evacuateTabs(
 
   const now = new Date().toISOString();
   const snapshots: TabSnapshot[] = evacuatable.map((tab, index) => ({
-    url: tab.url ?? 'about:blank',
+    url: resolveUrlForEvacuation(tab.url),
     title: tab.title ?? '',
     pinned: tab.pinned ?? false,
     index: tab.index ?? index,
@@ -142,7 +154,7 @@ async function evacuateViaClientTabRefs(
 
     toRemove.push(tab.id);
     snapshots.push({
-      url: tab.url ?? 'about:blank',
+      url: resolveUrlForEvacuation(tab.url),
       title: tab.title ?? '',
       pinned: tab.pinned ?? false,
       index: snapshots.length,

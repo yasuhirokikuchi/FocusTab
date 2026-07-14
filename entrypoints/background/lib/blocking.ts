@@ -40,6 +40,36 @@ export function isFocusTabPageUrl(url: string | undefined): boolean {
   }
 }
 
+/** 閲覧制限のブロック画面か */
+export function isBlockedPageUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  try {
+    const path = new URL(url).pathname.toLowerCase();
+    return path.endsWith('blocked.html');
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 退避スナップショット用 URL。
+ * ブロック画面は元ドメインを復元し、切替後に元サイトとして扱えるようにする。
+ */
+export function resolveUrlForEvacuation(url: string | undefined): string {
+  if (!url) return 'about:blank';
+  if (!isBlockedPageUrl(url)) return url;
+
+  try {
+    const site = new URL(url).searchParams.get('site')?.trim().toLowerCase();
+    if (!site) return url;
+    // スキーム付きで渡された場合はそのまま、ドメインのみなら https を補う
+    if (site.includes('://')) return site;
+    return `https://${site}`;
+  } catch {
+    return url;
+  }
+}
+
 export function domainMatchesBlacklist(url: string, blacklist: string[]): boolean {
   try {
     const hostname = new URL(url).hostname.toLowerCase();

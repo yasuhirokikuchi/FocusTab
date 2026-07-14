@@ -9,6 +9,7 @@ import { loadStorage, saveStorage, updateStorage } from './state';
 import {
   buildModeSnapshot,
   evacuateAllWindows,
+  filterSnapshotsForMode,
   resolveRestoreWindowId,
   restoreEvacuatedTabs,
   startRestore,
@@ -112,7 +113,11 @@ export async function switchMode(
     }
 
     // Phase E: 復元（失敗してもモード切替は維持）
-    const toRestore = updatedData.tabSnapshots[targetModeId] ?? [];
+    // 切替先で制限される URL は開かず退避状態のままにする
+    const toRestore = filterSnapshotsForMode(
+      updatedData.tabSnapshots[targetModeId] ?? [],
+      targetMode,
+    );
     let restoreJobId: string;
     try {
       restoreJobId = await startRestore(toRestore, targetModeId, windowId);
