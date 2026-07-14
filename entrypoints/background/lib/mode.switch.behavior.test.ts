@@ -257,6 +257,74 @@ describe('switchMode behavior matrix', () => {
     expect(after.tabSnapshots.work).toHaveLength(1);
     expect(after.tabSnapshots.work[0].url).toBe('https://new.example.com');
   });
+
+  it('ブロック画面タブは退避し、元サイト URL をスナップショットに保存する', async () => {
+    resetTabsMock();
+    seedSwitchableStorage();
+    addMockTab({ url: FOCUS_TAB_URL, active: true, windowId: MOCK_WINDOW_ID });
+    addMockTab({
+      url: 'chrome-extension://focustab-test/blocked.html?reason=blacklist&site=youtube.com&mode=work',
+      title: 'Blocked',
+      windowId: MOCK_WINDOW_ID,
+    });
+    addMockTab({ url: 'https://github.com', windowId: MOCK_WINDOW_ID });
+
+    const result = await switchMode('study', {
+      confirmed: true,
+      senderWindowId: MOCK_WINDOW_ID,
+    });
+
+    expect(result.evacuatedTabCount).toBe(2);
+    const after = await loadStorage();
+    expect(after.tabSnapshots.work.map((s) => s.url)).toEqual(
+      expect.arrayContaining(['https://youtube.com', 'https://github.com']),
+    );
+    expect(
+      getMockTabs().some((t) => t.url?.includes('blocked.html')),
+    ).toBe(false);
+  });
+
+  it('切替先ブラックリストに当たるタブは復元しない', async () => {
+    resetTabsMock();
+    // study は youtube を許可、work はブロック — work へ切替時に youtube は復元しない
+    const base = createDefaultStorage();
+    seedStorage({
+      ...base,
+      activeModeId: 'hobby',
+      settings: { ...base.settings, confirmModeSwitch: false },
+      tabSnapshots: {
+        work: [
+          {
+            url: 'https://github.com/work',
+            title: 'GitHub',
+            pinned: false,
+            index: 0,
+            savedAt: ISO,
+          },
+          {
+            url: 'https://www.youtube.com/watch?v=1',
+            title: 'YouTube',
+            pinned: false,
+            index: 1,
+            savedAt: ISO,
+          },
+        ],
+      },
+    });
+    addMockTab({ url: FOCUS_TAB_URL, active: true, windowId: MOCK_WINDOW_ID });
+    addMockTab({ url: 'https://hobby.example.com', windowId: MOCK_WINDOW_ID });
+
+    await switchMode('work', {
+      confirmed: true,
+      senderWindowId: MOCK_WINDOW_ID,
+    });
+
+    expect(getMockTabs().some((t) => t.url === 'https://github.com/work')).toBe(true);
+    expect(getMockTabs().some((t) => t.url?.includes('youtube.com'))).toBe(false);
+    // スナップショット自体は保持
+    const after = await loadStorage();
+    expect(after.tabSnapshots.work.some((s) => s.url.includes('youtube.com'))).toBe(true);
+  });
 });
 
 describe('resolveRestoreWindowId', () => {

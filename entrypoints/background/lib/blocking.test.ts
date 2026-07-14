@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   domainMatchesBlacklist,
   getManagedRuleIds,
+  isBlockedPageUrl,
   isExcludedTabUrl,
+  resolveUrlForEvacuation,
 } from './blocking';
 
 describe('isExcludedTabUrl', () => {
@@ -24,6 +26,36 @@ describe('isExcludedTabUrl', () => {
     expect(isExcludedTabUrl('http://localhost:3000/newtab.html')).toBe(true);
     expect(isExcludedTabUrl('http://127.0.0.1:3000/blocked.html')).toBe(true);
     expect(isExcludedTabUrl('http://localhost:3000/other')).toBe(false);
+  });
+});
+
+describe('isBlockedPageUrl', () => {
+  it('blocked.html を検出する', () => {
+    expect(
+      isBlockedPageUrl(
+        'chrome-extension://focustab-test/blocked.html?reason=blacklist&site=youtube.com',
+      ),
+    ).toBe(true);
+    expect(isBlockedPageUrl('http://localhost:3000/blocked.html?site=x.com')).toBe(true);
+  });
+
+  it('通常ページは検出しない', () => {
+    expect(isBlockedPageUrl('https://youtube.com')).toBe(false);
+    expect(isBlockedPageUrl('chrome-extension://focustab-test/newtab.html')).toBe(false);
+  });
+});
+
+describe('resolveUrlForEvacuation', () => {
+  it('ブロック画面は site パラメータから https URL を復元する', () => {
+    expect(
+      resolveUrlForEvacuation(
+        'chrome-extension://focustab-test/blocked.html?reason=blacklist&site=youtube.com&mode=work',
+      ),
+    ).toBe('https://youtube.com');
+  });
+
+  it('通常 URL はそのまま返す', () => {
+    expect(resolveUrlForEvacuation('https://github.com')).toBe('https://github.com');
   });
 });
 

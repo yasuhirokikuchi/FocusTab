@@ -3,7 +3,8 @@ import { MAX_TABS_PER_SNAPSHOT } from '@/shared/constants';
 import type { TabSnapshot } from '@/shared/schemas';
 import { SESSION_KEYS } from '@/shared/storage-keys';
 import { getSessionSnapshot, restoreChromeTabMocks } from '../../../tests/helpers/chrome-mock';
-import { buildModeSnapshot, startRestore, trimSnapshots } from './tabs';
+import { buildModeSnapshot, filterSnapshotsForMode, startRestore, trimSnapshots } from './tabs';
+import type { Mode } from '@/shared/schemas';
 
 function snapshot(index: number): TabSnapshot {
   return {
@@ -54,6 +55,47 @@ describe('buildModeSnapshot', () => {
 
   it('退避も既存もないときは空配列', () => {
     expect(buildModeSnapshot([], undefined)).toEqual([]);
+  });
+});
+
+describe('filterSnapshotsForMode', () => {
+  const restrictiveMode = {
+    id: 'work',
+    name: '仕事',
+    isRestrictive: true,
+    blacklist: ['youtube.com', 'x.com'],
+  } as Mode;
+
+  const openMode = {
+    id: 'hobby',
+    name: '趣味',
+    isRestrictive: false,
+    blacklist: [],
+  } as Mode;
+
+  const snaps: TabSnapshot[] = [
+    {
+      url: 'https://github.com',
+      title: 'GitHub',
+      pinned: false,
+      index: 0,
+      savedAt: '2026-06-18T00:00:00.000Z',
+    },
+    {
+      url: 'https://www.youtube.com/watch?v=1',
+      title: 'YouTube',
+      pinned: false,
+      index: 1,
+      savedAt: '2026-06-18T00:00:00.000Z',
+    },
+  ];
+
+  it('制限モードではブラックリスト URL を除外する', () => {
+    expect(filterSnapshotsForMode(snaps, restrictiveMode)).toEqual([snaps[0]]);
+  });
+
+  it('非制限モードではすべて残す', () => {
+    expect(filterSnapshotsForMode(snaps, openMode)).toEqual(snaps);
   });
 });
 
