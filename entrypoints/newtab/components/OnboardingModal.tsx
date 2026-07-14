@@ -31,10 +31,10 @@ export function OnboardingModal({ onComplete }: Props) {
         <>
           <ul className="onboarding-list">
             <li>
-              <strong>仕事</strong> — SNS・動画サイトをブロック
+              <strong>仕事</strong> — SNS・動画配信（YouTube / Netflix など）をブロック
             </li>
             <li>
-              <strong>学習</strong> — 集中向けに制限付き
+              <strong>学習</strong> — SNS・買い物・ニュースをブロック（教材用 YouTube は許可）
             </li>
             <li>
               <strong>趣味</strong> — 制限なし
